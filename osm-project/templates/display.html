@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en" >
+
+<head>
+    <meta charset="UTF-8">
+    <title>Drag and drop placeholder on PDF documents with mozilla pdf.js, interact.js, boostrap 3 and jQuery</title>
+
+    <link rel='stylesheet' href='https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.5/css/bootstrap.min.css'>
+
+    <link rel="stylesheet" href="{{url_for('static',filename='css/display.css')}}">
+</head>
+
+<body>
+    <div class="float-container">
+    <div class="float-child container" style="margin-left:0px"> 
+        <div class="row">
+            
+	    	<div class="col-md-6" id="pdfManager" style="display:none">	
+	    		<div class="row" id="selectorContainer">
+	    			<div class="col-fixed-240" id="parametriContainer">
+	    			</div>
+	    			<div class="col-fixed-605">
+	    				<div id="pageContainer" class="pdfViewer singlePageView dropzone nopadding" style="background-color:transparent">
+	    					<canvas id="the-canvas" style="border:1px  solid black" ondragover="allowDrop(event)" ondrop="dropcopy(event)"></canvas>
+	    				</div>
+	    			</div>
+                </div>
+            </div>
+        </div>
+        <div>
+            <button class="btn" id="prev_pg">Prev</button>
+            <button class="btn" id="next_pg">Next</button>
+            
+        </div>
+    </div>
+    
+<input id="parameters" type="hidden" value='[{"idParametro":480,"src":"{{url_for("static",filename="img/1.png")}}","descrizione":"1","valore":"X","nota":null},{"idParametro":481,"src":"{{url_for("static",filename="img/2.png")}}","descrizione":"2","valore":"X","nota":null},{"idParametro":482,"src":"{{url_for("static",filename="img/3.png")}}","descrizione":"3","valore":"A","nota":null},{"idParametro":483,"src":"{{url_for("static",filename="img/4.png")}}","descrizione":"4","valore":"X","nota":null},{"idParametro":484,"src":"{{url_for("static",filename="img/5.png")}}","descrizione":"5","valore":"CD","nota":null},{"idParametro":485,"src":"{{url_for("static",filename="img/6.png")}}","descrizione":"6","valore":"data alert","nota":null}]' />
+<input id="pdfBase64" type="hidden" value="{{ pdf_base64 }}"/>
+<div class="float-child-2">
+    <div class="flex-row">
+        <div class="flex-container">
+            <div class="flex-item-header">Question</div>
+            <button class="flex-item" onclick="ques(event,1);" id="q1">1</button>
+            <button class="flex-item" onclick="ques(event,2);" id="q2">2</button>
+            <button class="flex-item" onclick="ques(event,3);" id="q3">3</button>
+            <button class="flex-item" onclick="ques(event,4);" id="q4">4</button>
+            <button class="flex-item" onclick="ques(event,5);" id="q5">5</button>
+            <button class="flex-item" onclick="ques(event,6);" id="q6">6</button>
+        </div>
+        <div class="flex-container">
+            <div class="flex-mark-header">Marks</div>
+            <div class="flex-mark" id="m-1">0</div>
+            <div class="flex-mark" id="m-2">0</div>
+            <div class="flex-mark" id="m-3">0</div>  
+            <div class="flex-mark" id="m-4">0</div>
+            <div class="flex-mark" id="m-5">0</div>
+            <div class="flex-mark" id="m-6">0</div>
+        </div>
+    </div>
+    <div class="grid-item-footer">Total : <span id="total">0</span></div>
+</div>
+</div>
+<style>
+.float-container {
+    border: 3px solid #fff;
+    padding: 20px;
+}
+
+.float-child {
+    width: 60%;
+    float: left;
+}
+
+.float-child-2 {
+    width: 40%;
+    float: left;
+}
+
+.abc{
+    display:inline-block;
+}
+
+.flex-row{
+    display: inline-flex;
+}
+
+.flex-container {
+    display: flex;
+    flex-direction:column;
+}
+
+.flex-item-header{
+    border: 1px solid rgba(0, 0, 0, 0.8);
+    margin: 0px 10px;
+    text-align: center;
+    padding: 10px;
+}
+
+.flex-item{
+    border: 1px solid rgba(0, 0, 0, 0.8);
+    padding: 5px;
+    width: 100px;
+    margin: 10px;
+    line-height: 75px;
+    font-size: 30px;
+    text-align: center;
+    cursor: pointer;
+    user-select: all;
+}
+
+.flex-mark-header{
+    border: 1px solid rgba(0, 0, 0, 0.8);
+    text-align: center;
+    padding: 10px;
+    margin: 0px 10px;
+}
+
+.flex-mark{
+    border: 1px solid rgba(0, 0, 0, 0.8);
+    padding: 32px;
+    margin: 10px;
+}
+
+.grid-item-footer{
+    border: 1px solid rgba(0, 0, 0, 0.8);
+    background-color: rgba(255, 255, 255, 0.8);
+    font-size: 30px;
+    text-align: center;
+    grid-area: footer;
+}
+
+.flex-item::selection{
+    color:red;
+    box-shadow: 0 0 5px -1px rgba(0,0,0,0.6);
+}
+</style>
+<script src='https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js'></script>
+<script src='https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.5/js/bootstrap.min.js'></script>
+<script src='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.0.943/pdf.min.js'></script>
+<script src='https://cdnjs.cloudflare.com/ajax/libs/interact.js/1.2.9/interact.min.js'></script>
+<script src='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.0.943/pdf.worker.min.js'></script>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
+
+<!-- <script  src="js/index.js"></script> -->
+<script src="{{url_for('static',filename='js/display.js')}}"></script>
+</body>
+
+</html>
